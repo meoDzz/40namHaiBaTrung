@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>40 năm - Hai Bà Trưng</title>
+    <title>Tùy chỉnh Facebook Frame - Hai Bà Trưng</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
             background-color: #f8fafc;
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            touch-action: manipulation;
+            /* Cho phép cuộn trang bình thường */
+            touch-action: pan-y;
         }
         #canvas-container {
             box-shadow: 0 10px 20px -5px rgb(0 0 0 / 0.1);
@@ -19,6 +20,7 @@
             background-color: #f1f5f9;
             cursor: move;
             position: relative;
+            /* Chỉ chặn các hành vi mặc định khi thao tác trên canvas */
             touch-action: none;
         }
         .control-btn {
@@ -58,7 +60,7 @@
             position: fixed;
             inset: 0;
             background: rgba(0,0,0,0.9);
-            z-index: 100;
+            z-index: 200;
             align-items: center;
             justify-content: center;
             padding: 20px;
@@ -66,6 +68,15 @@
         }
         #result-modal.active {
             display: flex;
+        }
+        
+        .result-box {
+            animation: zoomIn 0.3s ease-out;
+        }
+        
+        @keyframes zoomIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
     </style>
 </head>
@@ -99,7 +110,6 @@
                 <p class="text-slate-500 text-[10px] md:text-sm mt-1 font-medium italic uppercase tracking-tighter">Kỷ niệm 1986 - 2026</p>
             </header>
 
-            <!-- 1. Tải ảnh -->
             <section class="space-y-3 mb-6">
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">1. Hình ảnh của bạn</label>
                 <button onclick="document.getElementById('user-photo').click()" class="btn-primary control-btn w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3.5 px-5 rounded-xl flex items-center justify-center gap-3 font-bold shadow-lg shadow-indigo-100">
@@ -109,7 +119,6 @@
                 <input type="file" id="user-photo" accept="image/*" class="hidden">
             </section>
 
-            <!-- 2. Điều chỉnh -->
             <section class="space-y-5 mb-6">
                 <div>
                     <div class="flex justify-between items-center mb-2">
@@ -141,7 +150,7 @@
 
             <div class="mt-auto pt-4 border-t border-slate-100">
                 <button id="download-btn" class="btn-primary control-btn w-full bg-emerald-500 hover:bg-emerald-600 text-white py-4 px-6 rounded-xl flex items-center justify-center gap-4 font-black text-lg shadow-xl shadow-emerald-100 uppercase tracking-tighter">
-                    <i class="fas fa-download"></i> TẢI ẢNH VỀ MÁY
+                    <i class="fas fa-magic"></i> XUẤT ẢNH NGAY
                 </button>
                 <div class="flex justify-center gap-4 mt-4 text-[9px] text-slate-400 uppercase tracking-widest font-bold">
                     Trường THPT Hai Bà Trưng - Huế
@@ -150,23 +159,30 @@
         </div>
     </div>
 
-    <!-- Modal hiển thị ảnh cho mobile nhấn giữ để lưu -->
+    <!-- Modal cho Mobile Download -->
     <div id="result-modal">
-        <div class="bg-white p-5 rounded-3xl w-full max-w-sm flex flex-col items-center shadow-2xl scale-in-center">
-            <h3 class="text-slate-800 font-black mb-1 uppercase">Sẵn sàng!</h3>
-            <p class="text-indigo-600 text-[10px] mb-4 text-center font-bold uppercase">Nhấn giữ vào ảnh bên dưới để chọn "Lưu hình ảnh"</p>
+        <div class="result-box bg-white p-6 rounded-3xl w-full max-w-sm flex flex-col items-center shadow-2xl">
+            <h3 class="text-slate-800 font-black mb-1 uppercase text-lg">Hoàn thành!</h3>
+            <div class="bg-indigo-50 text-indigo-600 text-[10px] py-2 px-4 rounded-full mb-4 font-black uppercase flex items-center gap-2">
+                <i class="fas fa-fingerprint"></i> Nhấn giữ ảnh dưới để lưu
+            </div>
             
-            <div class="w-full aspect-square bg-slate-100 rounded-2xl overflow-hidden mb-6 shadow-inner border border-slate-100">
+            <div class="w-full aspect-square bg-slate-50 rounded-2xl overflow-hidden mb-6 shadow-inner border border-slate-100">
                 <img id="result-img" class="w-full h-full object-contain" alt="Kết quả">
             </div>
             
-            <button onclick="document.getElementById('result-modal').classList.remove('active')" class="control-btn w-full bg-slate-800 text-white py-3.5 rounded-xl font-bold uppercase text-xs tracking-widest">
-                Đóng
-            </button>
+            <div class="grid grid-cols-2 gap-3 w-full">
+                <button id="open-new-tab" class="control-btn bg-slate-100 text-slate-700 py-3 rounded-xl font-bold uppercase text-[10px] tracking-widest border border-slate-200">
+                    Mở tab mới
+                </button>
+                <button onclick="document.getElementById('result-modal').classList.remove('active')" class="control-btn bg-indigo-600 text-white py-3 rounded-xl font-bold uppercase text-[10px] tracking-widest shadow-lg shadow-indigo-100">
+                    Đóng
+                </button>
+            </div>
         </div>
     </div>
 
-    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900/90 backdrop-blur-sm text-white px-6 py-3 rounded-full text-[10px] md:text-xs font-bold shadow-2xl transition-all duration-300 translate-y-20 opacity-0 z-[110] text-center min-w-[280px]">
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900/90 backdrop-blur-sm text-white px-6 py-3 rounded-full text-[10px] md:text-xs font-bold shadow-2xl transition-all duration-300 translate-y-20 opacity-0 z-[210] text-center min-w-[280px]">
         Thông báo
     </div>
 
@@ -179,8 +195,9 @@
         const downloadBtn = document.getElementById('download-btn');
         const resultModal = document.getElementById('result-modal');
         const resultImg = document.getElementById('result-img');
+        const openNewTabBtn = document.getElementById('open-new-tab');
 
-        const FRAME_URL = 'Final-v1.png'; // Đảm bảo file này nằm cùng thư mục trên server
+        const FRAME_URL = 'Final-v1.png'; 
 
         let state = {
             userImg: null,
@@ -191,7 +208,6 @@
             isDragging: false,
             lastX: 0,
             lastY: 0,
-            // Pinch-to-zoom state
             initialPinchDistance: 0,
             initialScale: 1
         };
@@ -290,12 +306,10 @@
 
         const handleStart = (e) => {
             if (e.touches && e.touches.length === 2) {
-                // Khởi động pinch-to-zoom
                 state.isDragging = false;
                 state.initialPinchDistance = getDistance(e.touches);
                 state.initialScale = state.scale;
             } else {
-                // Khởi động kéo ảnh
                 state.isDragging = true;
                 const pos = getMousePos(e);
                 state.lastX = pos.x; state.lastY = pos.y;
@@ -304,20 +318,20 @@
 
         const handleMove = (e) => {
             if (!state.userImg) return;
-
+            
+            // Chỉ chặn cuộn màn hình khi đang thao tác thực sự (kéo hoặc zoom)
             if (e.touches && e.touches.length === 2) {
-                // Thực hiện thu phóng bằng 2 ngón tay
+                e.preventDefault(); 
                 const currentDist = getDistance(e.touches);
                 if (state.initialPinchDistance > 0) {
                     const ratio = currentDist / state.initialPinchDistance;
                     let newScale = state.initialScale * ratio;
-                    // Giới hạn scale trong khoảng 0.05 đến 3
                     newScale = Math.min(Math.max(newScale, 0.05), 3);
                     updateScale(newScale);
                     render();
                 }
             } else if (state.isDragging) {
-                // Thực hiện kéo ảnh bằng 1 ngón tay
+                e.preventDefault();
                 const pos = getMousePos(e);
                 state.posX += (pos.x - state.lastX);
                 state.posY += (pos.y - state.lastY);
@@ -331,26 +345,15 @@
             state.initialPinchDistance = 0;
         };
 
-        // PC Events
         canvas.addEventListener('mousedown', handleStart);
         window.addEventListener('mousemove', handleMove);
         window.addEventListener('mouseup', handleEnd);
         
-        // Mobile Events
-        canvas.addEventListener('touchstart', (e) => { 
-            handleStart(e); 
-        }, {passive: false});
-        
-        window.addEventListener('touchmove', (e) => { 
-            if (state.userImg) {
-                e.preventDefault(); // Chặn scroll trang khi đang thao tác trên ảnh
-                handleMove(e); 
-            }
-        }, {passive: false});
+        // Thêm listener vào canvas để xử lý touch chính xác hơn
+        canvas.addEventListener('touchstart', handleStart, {passive: false});
+        canvas.addEventListener('touchmove', handleMove, {passive: false});
+        canvas.addEventListener('touchend', handleEnd);
 
-        window.addEventListener('touchend', handleEnd);
-
-        // Nút di chuyển
         const step = 25;
         document.getElementById('move-up').onclick = () => { state.posY -= step; render(); };
         document.getElementById('move-down').onclick = () => { state.posY += step; render(); };
@@ -361,21 +364,29 @@
         downloadBtn.onclick = () => {
             if (!state.userImg) return showToast("Vui lòng chọn ảnh trước!");
             
-            showToast("Đang xử lý ảnh...");
-
-            const dataUrl = canvas.toDataURL("image/png", 1.0);
-            resultImg.src = dataUrl;
-            
-            // Hiện Modal để lưu cho mobile
-            setTimeout(() => {
+            try {
+                showToast("Đang tạo ảnh chất lượng cao...");
+                const dataUrl = canvas.toDataURL("image/png", 1.0);
+                
+                resultImg.src = dataUrl;
                 resultModal.classList.add('active');
-            }, 300);
 
-            // Cố gắng tải về cho Desktop
-            const link = document.createElement('a');
-            link.href = dataUrl;
-            link.download = 'Avatar_HBT_40nam.png';
-            link.click();
+                const link = document.createElement('a');
+                link.href = dataUrl;
+                link.download = 'Avatar_HBT_40nam.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                openNewTabBtn.onclick = () => {
+                    const win = window.open();
+                    win.document.write('<img src="' + dataUrl  + '" style="width:100%;">');
+                };
+
+            } catch (err) {
+                console.error(err);
+                showToast("Lỗi hệ thống khi xuất ảnh.");
+            }
         };
 
         function showToast(msg) {
