@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tùy chỉnh Facebook Frame - Hai Bà Trưng</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8fafc;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        #canvas-container {
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 16px 16px;
+            background-color: #f1f5f9;
+            cursor: move;
+        }
+        .control-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+        input[type=range] {
+            height: 6px;
+            -webkit-appearance: none;
+            width: 100%;
+            background: #e2e8f0;
+            border-radius: 999px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #4f46e5;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex items-center justify-center min-h-screen">
+
+    <div class="max-w-6xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col lg:flex-row border border-slate-100">
+        
+        <!-- Khu vực Preview -->
+        <div class="flex-[1.5] bg-slate-50 p-6 md:p-10 flex flex-col items-center justify-center border-b lg:border-b-0 lg:border-r border-slate-200">
+            <div class="flex items-center gap-2 mb-6">
+                <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                <h2 class="ml-2 text-sm font-bold uppercase tracking-widest text-slate-400">Xem trước</h2>
+            </div>
+            
+            <div id="canvas-container" class="relative rounded-xl overflow-hidden border-[12px] border-white shadow-inner">
+                <canvas id="mainCanvas" width="800" height="800" class="max-w-full h-auto block"></canvas>
+            </div>
+            
+            <div class="mt-6 flex items-center gap-4 text-slate-500 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100">
+                <i class="fas fa-arrows-alt text-indigo-500"></i>
+                <span class="text-xs font-medium">Bạn có thể dùng chuột/tay kéo ảnh để căn chỉnh</span>
+            </div>
+        </div>
+
+        <!-- Khu vực Tùy chỉnh -->
+        <div class="flex-1 p-8 flex flex-col bg-white">
+            <header class="mb-8 text-center lg:text-left">
+                <h1 class="text-3xl font-black text-slate-900 leading-tight">40 NĂM<br><span class="text-indigo-600 uppercase">Hai Bà Trưng</span></h1>
+                <p class="text-slate-500 text-sm mt-2 font-medium italic">Kỷ niệm 1986 - 2026</p>
+            </header>
+
+            <!-- 1. Tải ảnh -->
+            <section class="space-y-4 mb-8">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">1. Hình ảnh của bạn</label>
+                <div class="grid grid-cols-1">
+                    <button onclick="document.getElementById('user-photo').click()" class="control-btn bg-indigo-600 hover:bg-indigo-700 text-white py-4 px-5 rounded-2xl flex items-center justify-center gap-3 font-bold shadow-lg shadow-indigo-100">
+                        <i class="fas fa-camera"></i>
+                        <span>CHỌN ẢNH CÁ NHÂN</span>
+                    </button>
+                    <input type="file" id="user-photo" accept="image/*" class="hidden">
+                </div>
+            </section>
+
+            <!-- 2. Điều chỉnh -->
+            <section class="space-y-6 mb-8">
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">2. Phóng to / Thu nhỏ</label>
+                        <span id="zoom-val" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">100%</span>
+                    </div>
+                    <input type="range" id="zoom-slider" min="0.05" max="3" step="0.01" value="1" class="w-full">
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-4">3. Di chuyển chính xác</label>
+                    <div class="flex justify-center">
+                        <div class="grid grid-cols-3 gap-2">
+                            <div></div>
+                            <button id="move-up" class="control-btn w-12 h-12 bg-slate-100 hover:bg-slate-200 rounded-xl flex items-center justify-center text-slate-600"><i class="fas fa-arrow-up"></i></button>
+                            <div></div>
+                            <button id="move-left" class="control-btn w-12 h-12 bg-slate-100 hover:bg-slate-200 rounded-xl flex items-center justify-center text-slate-600"><i class="fas fa-arrow-left"></i></button>
+                            <button id="reset-pos" class="control-btn w-12 h-12 bg-indigo-50 hover:bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600" title="Về trung tâm"><i class="fas fa-dot-circle"></i></button>
+                            <button id="move-right" class="control-btn w-12 h-12 bg-slate-100 hover:bg-slate-200 rounded-xl flex items-center justify-center text-slate-600"><i class="fas fa-arrow-right"></i></button>
+                            <div></div>
+                            <button id="move-down" class="control-btn w-12 h-12 bg-slate-100 hover:bg-slate-200 rounded-xl flex items-center justify-center text-slate-600"><i class="fas fa-arrow-down"></i></button>
+                            <div></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="mt-auto pt-6 border-t border-slate-100">
+                <button id="download-btn" class="control-btn w-full bg-emerald-500 hover:bg-emerald-600 text-white py-4 px-6 rounded-2xl flex items-center justify-center gap-4 font-black text-xl shadow-xl shadow-emerald-100">
+                    <i class="fas fa-cloud-download-alt"></i> TẢI ẢNH VỀ MÁY
+                </button>
+                <p class="text-center text-[10px] text-slate-400 mt-4 uppercase tracking-tighter">Hỗ trợ tốt nhất trên Chrome và Safari</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed top-8 right-8 bg-slate-900 text-white px-6 py-3 rounded-2xl text-sm font-bold shadow-2xl transition-all duration-300 translate-x-full opacity-0">
+        Thông báo
+    </div>
+
+    <script>
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d');
+        const zoomSlider = document.getElementById('zoom-slider');
+        const zoomValDisp = document.getElementById('zoom-val');
+        const userPhotoInput = document.getElementById('user-photo');
+        const downloadBtn = document.getElementById('download-btn');
+
+        // CẤU HÌNH FRAME Ở ĐÂY
+        // Thay link ảnh PNG của bạn vào dấu nháy bên dưới
+        const FRAME_URL = 'Final-v1.png'; 
+
+        let state = {
+            userImg: null,
+            frameImg: null,
+            posX: 400,
+            posY: 400,
+            scale: 1,
+            isDragging: false,
+            lastX: 0,
+            lastY: 0
+        };
+
+        // Khởi tạo Frame từ Server (Hardcoded URL)
+        const frameImg = new Image();
+        frameImg.crossOrigin = "anonymous"; // Quan trọng để có thể tải ảnh về sau khi vẽ
+        frameImg.onload = () => {
+            updateCanvasSize(frameImg);
+            state.frameImg = frameImg;
+            render();
+        };
+        frameImg.onerror = () => {
+            showToast("Không thể tải Frame từ server!");
+        };
+        frameImg.src = FRAME_URL;
+
+        function updateCanvasSize(img) {
+            // Độ phân giải cao cho ảnh xuất ra (1200px)
+            const baseSize = 1200;
+            const ratio = img.width / img.height;
+            
+            if (ratio >= 1) {
+                canvas.width = baseSize;
+                canvas.height = baseSize / ratio;
+            } else {
+                canvas.height = baseSize;
+                canvas.width = baseSize * ratio;
+            }
+            
+            state.posX = canvas.width / 2;
+            state.posY = canvas.height / 2;
+        }
+
+        userPhotoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    state.userImg = img;
+                    // Tính toán scale ban đầu sao cho ảnh phủ kín khung hình
+                    const scaleNeeded = Math.max(canvas.width / img.width, canvas.height / img.height);
+                    state.scale = scaleNeeded;
+                    zoomSlider.value = scaleNeeded;
+                    zoomValDisp.innerText = Math.round(scaleNeeded * 100) + "%";
+                    state.posX = canvas.width / 2;
+                    state.posY = canvas.height / 2;
+                    render();
+                    showToast("Đã tải ảnh thành công");
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Vẽ nền trắng mặc định (để tránh lỗ hổng nếu ảnh ko phủ hết)
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Vẽ ảnh cá nhân (LỚP DƯỚI)
+            if (state.userImg) {
+                ctx.save();
+                const drawW = state.userImg.width * state.scale;
+                const drawH = state.userImg.height * state.scale;
+                ctx.drawImage(state.userImg, state.posX - drawW / 2, state.posY - drawH / 2, drawW, drawH);
+                ctx.restore();
+            } else {
+                // Placeholder khi chưa có ảnh
+                ctx.fillStyle = "#f1f5f9";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#cbd5e1";
+                ctx.textAlign = "center";
+                ctx.font = "bold 40px Inter";
+                ctx.fillText("CHƯA CÓ ẢNH", canvas.width/2, canvas.height/2);
+            }
+
+            // 2. Vẽ khung (LỚP TRÊN)
+            if (state.frameImg) {
+                ctx.drawImage(state.frameImg, 0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        // --- Sự kiện điều khiển ---
+        zoomSlider.addEventListener('input', (e) => {
+            state.scale = parseFloat(e.target.value);
+            zoomValDisp.innerText = Math.round(state.scale * 100) + "%";
+            render();
+        });
+
+        function getMousePos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            let clientX, clientY;
+            if (e.touches) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+        }
+
+        const handleStart = (e) => {
+            state.isDragging = true;
+            const pos = getMousePos(e);
+            state.lastX = pos.x; state.lastY = pos.y;
+        };
+        const handleMove = (e) => {
+            if (!state.isDragging || !state.userImg) return;
+            const pos = getMousePos(e);
+            state.posX += (pos.x - state.lastX);
+            state.posY += (pos.y - state.lastY);
+            state.lastX = pos.x; state.lastY = pos.y;
+            render();
+        };
+        const handleEnd = () => state.isDragging = false;
+
+        canvas.addEventListener('mousedown', handleStart);
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('mouseup', handleEnd);
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleStart(e); }, {passive: false});
+        window.addEventListener('touchmove', (e) => { handleMove(e); }, {passive: false});
+        window.addEventListener('touchend', handleEnd);
+
+        // Nút điều khiển nút bấm
+        const step = 20;
+        document.getElementById('move-up').onclick = () => { state.posY -= step; render(); };
+        document.getElementById('move-down').onclick = () => { state.posY += step; render(); };
+        document.getElementById('move-left').onclick = () => { state.posX -= step; render(); };
+        document.getElementById('move-right').onclick = () => { state.posX += step; render(); };
+        document.getElementById('reset-pos').onclick = () => { state.posX = canvas.width/2; state.posY = canvas.height/2; render(); };
+
+        downloadBtn.onclick = () => {
+            if (!state.userImg) return showToast("Hãy chọn ảnh cá nhân trước!");
+            const link = document.createElement('a');
+            link.download = 'Avatar_40nam_HBT.png';
+            link.href = canvas.toDataURL("image/png", 1.0);
+            link.click();
+            showToast("Đang tải ảnh xuống...");
+        };
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.style.transform = "translateX(0)";
+            toast.style.opacity = "1";
+            setTimeout(() => { toast.style.transform = "translateX(100%)"; toast.style.opacity = "0"; }, 3000);
+        }
+    </script>
+</body>
+</html>
